@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    themes.xml — infinite-specs-xr-core (:app)
+
+    Defines the app theme extending Material3 DayNight for optimal legibility
+    on both standard Android screens and see-through XR glass displays.
+-->
+<resources>
+    <!-- Base theme: inherits Material3 DayNight defaults. -->
+    <style name="Theme.InfiniteSpecs" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Spatial panel colours are applied programmatically via Compose;
+             no additional XML overrides are required here. -->
+    </style>
+</resources>

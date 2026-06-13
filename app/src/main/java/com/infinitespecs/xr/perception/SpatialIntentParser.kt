@@ -71,8 +71,16 @@ sealed class RawSpatialEvent {
 
     /**
      * A composite event fusing co-temporal gaze and voice signals.
-     * Emitted by the perception layer when a [GazeEvent] and at least one
-     * [VoiceEvent] occur within [COMPOSITE_WINDOW_MS] of each other.
+     *
+     * **Status: future milestone — not yet produced by [DefaultSpatialIntentParser].**
+     *
+     * Will be emitted by the perception layer when a [GazeEvent] and at least one
+     * [VoiceEvent] occur within [COMPOSITE_WINDOW_MS] of each other. The planned
+     * `CompositeSpatialIntentParser` will slide a time window over the merged event
+     * stream and emit `CompositeEvent` when both signal types co-occur.
+     *
+     * TODO(infinite-specs): Implement composite gaze+voice fusion in a follow-up
+     *   milestone. See README §Tier-1 Perception Layer for the planned architecture.
      */
     data class CompositeEvent(
         val gazeEvent: GazeEvent,
@@ -81,7 +89,12 @@ sealed class RawSpatialEvent {
     ) : RawSpatialEvent()
 
     companion object {
-        /** Maximum gap (ms) between gaze and voice for composite fusion. */
+        /**
+         * Maximum gap (ms) between a gaze event and voice tokens for them to be
+         * considered co-temporal and fused into a [CompositeEvent].
+         *
+         * Used by the future `CompositeSpatialIntentParser` implementation.
+         */
         const val COMPOSITE_WINDOW_MS: Long = 500L
     }
 }

@@ -33,6 +33,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Specification payload domain types
@@ -273,7 +275,10 @@ class InMemoryMcpBridge : McpSpecificationBridge {
                     McpToolDefinitionJson(
                         name = toolName,
                         description = description,
-                        inputSchema = inputSchemaJson,
+                        // Parse the JSON Schema string into a structured JsonObject so the
+                        // serialised envelope contains a proper JSON object rather than an
+                        // escaped string literal. Throws SerializationException on malformed input.
+                        inputSchema = Json.parseToJsonElement(inputSchemaJson).jsonObject,
                     )
                 ),
             ),
@@ -305,12 +310,20 @@ class InMemoryMcpBridge : McpSpecificationBridge {
 /**
  * Minimal JSON representation of an MCP `ToolDefinition` used when
  * serialising [SpecPayload.McpToolSpec] into an [McpEnvelope].
+ *
+ * @param name        Unique tool name for JSON-RPC method routing.
+ * @param description Human-readable description for the LLM prompt.
+ * @param inputSchema Structured [JsonObject] representing the JSON Schema
+ *                    for the tool's input parameters. Using [JsonObject]
+ *                    (rather than a raw [String]) ensures the schema is
+ *                    well-formed JSON and prevents double-encoded strings in
+ *                    the serialised MCP envelope.
  */
 @Serializable
 internal data class McpToolDefinitionJson(
     val name: String,
     val description: String,
-    val inputSchema: String,
+    val inputSchema: JsonObject,
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
