@@ -18,7 +18,7 @@ class McpSpecificationBridge {
 
     /**
      * Serializes spatial intent into an idempotent OpenAPI specification file variant.
-     * This file gets dropped directly into the local project directory, triggering the 
+     * This file gets dropped directly into the local project directory, triggering the
      * background loop execution.
      */
     suspend fun streamIntentToAutonomousAgentWorktree(intent: ArchitecturalIntent) {

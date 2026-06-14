@@ -14,4 +14,26 @@ plugins {
     alias(libs.plugins.kotlin.android)       apply false
     alias(libs.plugins.kotlin.compose)       apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.spotless)
+}
+
+subprojects {
+    apply(plugin = "com.diffplug.spotless")
+    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        kotlin {
+            target("**/*.kt")
+            targetExclude("**/build/**")
+            ktlint(libs.versions.ktlint.get())
+                .editorConfigOverride(
+                    mapOf(
+                        "ktlint_standard_no-wildcard-imports" to "disabled",
+                        "ktlint_standard_filename" to "disabled",
+                        "ktlint_standard_function-naming" to "disabled",
+                        "ktlint_standard_backing-property-naming" to "disabled",
+                        "ktlint_standard_value-parameter-comment" to "disabled",
+                        "indent_size" to "4",
+                    )
+                )
+        }
+    }
 }

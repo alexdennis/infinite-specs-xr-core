@@ -10,15 +10,15 @@ class SpatialIntentParser {
 
     @Serializable
     data class ArchitecturalIntent(
-        val nodeType: String,      // e.g., "KafkaConsumer", "DMXLightingController"
+        val nodeType: String, // e.g., "KafkaConsumer", "DMXLightingController"
         val physicalAnchorId: String, // Vector tracking link to a real-world object
         val semanticConstraints: List<String>, // List of system invariants spoken aloud
-        val loopEngineeringSkillTemplate: String // Flags the target sub-agent pipeline
+        val loopEngineeringSkillTemplate: String, // Flags the target sub-agent pipeline
     )
 
     fun parseTokensToSchemaConstraint(
         voiceTranscript: String,
-        gazeVector: FloatArray
+        gazeVector: FloatArray,
     ): ArchitecturalIntent {
         // Mock processing mapping physical environment geometry to an invariant prompt payload
         return ArchitecturalIntent(
@@ -26,9 +26,9 @@ class SpatialIntentParser {
             physicalAnchorId = "anchor_stage_rig_left_04",
             semanticConstraints = listOf(
                 "Must process incoming DMX tokens below 11ms latency",
-                "Must emit state updates via Server-Sent Events over MCP"
+                "Must emit state updates via Server-Sent Events over MCP",
             ),
-            loopEngineeringSkillTemplate = "autonomous-service-generator-v1"
+            loopEngineeringSkillTemplate = "autonomous-service-generator-v1",
         )
     }
 }

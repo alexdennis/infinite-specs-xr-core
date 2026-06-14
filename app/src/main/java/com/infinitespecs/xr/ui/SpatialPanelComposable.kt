@@ -41,6 +41,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -56,6 +58,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.xr.compose.spatial.Orbiter
+import androidx.xr.compose.spatial.OrbiterAnchorPoint
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data models for the UI layer
@@ -105,23 +109,43 @@ enum class PanelStatus {
  */
 @Composable
 fun InfiniteSpecsHudPanel(
+    modifier: Modifier = Modifier,
     nodes: List<NodeCardState>,
     status: PanelStatus = PanelStatus.IDLE,
-    modifier: Modifier = Modifier,
+    onTrigger: () -> Unit = {},
 ) {
-    Surface(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp)),
-        color = HudColors.PanelBackground,
-        tonalElevation = 4.dp,
-        shadowElevation = 8.dp,
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            HudPanelHeader(status = status)
-            Spacer(modifier = Modifier.height(12.dp))
-            NodeCardRow(nodes = nodes)
-            Spacer(modifier = Modifier.height(12.dp))
-            HudStatusBar(status = status)
+    Box(modifier = modifier) {
+        Surface(
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp)),
+            color = HudColors.PanelBackground,
+            tonalElevation = 4.dp,
+            shadowElevation = 8.dp,
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                HudPanelHeader(status = status)
+                Spacer(modifier = Modifier.height(12.dp))
+                NodeCardRow(nodes = nodes)
+                Spacer(modifier = Modifier.height(12.dp))
+                HudStatusBar(status = status)
+            }
+        }
+
+        Orbiter(
+            anchorPoint = OrbiterAnchorPoint.Bottom,
+        ) {
+            Button(
+                onClick = onTrigger,
+                colors = ButtonDefaults.buttonColors(containerColor = HudColors.AccentBlue),
+                enabled = status == PanelStatus.IDLE,
+            ) {
+                Text(
+                    text = "Engage Perception Pipeline",
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 12.sp,
+                    color = Color.White,
+                )
+            }
         }
     }
 }
@@ -165,9 +189,9 @@ private fun HudPanelHeader(status: PanelStatus) {
 @Composable
 private fun StreamingBadge(status: PanelStatus) {
     val (badgeColor, badgeText) = when (status) {
-        PanelStatus.STREAMING   -> HudColors.AccentGreen  to "● STREAMING"
-        PanelStatus.PROCESSING  -> HudColors.AccentAmber  to "◌ PROCESSING"
-        PanelStatus.IDLE        -> HudColors.TextDisabled to "○ IDLE"
+        PanelStatus.STREAMING -> HudColors.AccentGreen to "● STREAMING"
+        PanelStatus.PROCESSING -> HudColors.AccentAmber to "◌ PROCESSING"
+        PanelStatus.IDLE -> HudColors.TextDisabled to "○ IDLE"
     }
     Box(
         modifier = Modifier
@@ -228,8 +252,11 @@ fun NodeCard(
     modifier: Modifier = Modifier,
 ) {
     val borderColor = if (state.isActive) HudColors.AccentBlue else Color.Transparent
-    val cardBackground = if (state.isActive)
-        HudColors.CardBackgroundActive else HudColors.CardBackground
+    val cardBackground = if (state.isActive) {
+        HudColors.CardBackgroundActive
+    } else {
+        HudColors.CardBackground
+    }
 
     Box(
         modifier = modifier
@@ -292,14 +319,14 @@ fun NodeCard(
 @Composable
 private fun HudStatusBar(status: PanelStatus) {
     val statusText = when (status) {
-        PanelStatus.IDLE        -> "Awaiting spatial telemetry..."
-        PanelStatus.PROCESSING  -> "Folding telemetry into MCP schema..."
-        PanelStatus.STREAMING   -> "▶ Streaming specs to autonomous IDE loops..."
+        PanelStatus.IDLE -> "Awaiting spatial telemetry..."
+        PanelStatus.PROCESSING -> "Folding telemetry into MCP schema..."
+        PanelStatus.STREAMING -> "▶ Streaming specs to autonomous IDE loops..."
     }
     val statusColor = when (status) {
-        PanelStatus.STREAMING   -> HudColors.AccentGreen
-        PanelStatus.PROCESSING  -> HudColors.AccentAmber
-        PanelStatus.IDLE        -> HudColors.TextDisabled
+        PanelStatus.STREAMING -> HudColors.AccentGreen
+        PanelStatus.PROCESSING -> HudColors.AccentAmber
+        PanelStatus.IDLE -> HudColors.TextDisabled
     }
     Box(
         modifier = Modifier
@@ -324,26 +351,26 @@ private fun HudStatusBar(status: PanelStatus) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 private object HudColors {
-    val PanelBackground      = Color(0xCC0D1117)  // near-black, 80% opacity
-    val CardBackground       = Color(0xFF161B22)
+    val PanelBackground = Color(0xCC0D1117) // near-black, 80% opacity
+    val CardBackground = Color(0xFF161B22)
     val CardBackgroundActive = Color(0xFF1F3A5F)
-    val StatusBarBackground  = Color(0xFF0D1117)
-    val TextPrimary          = Color(0xFFE6EDF3)
-    val TextSecondary        = Color(0xFF8B949E)
-    val TextDisabled         = Color(0xFF484F58)
-    val AccentBlue           = Color(0xFF58A6FF)
-    val AccentGreen          = Color(0xFF3FB950)
-    val AccentAmber          = Color(0xFFD29922)
+    val StatusBarBackground = Color(0xFF0D1117)
+    val TextPrimary = Color(0xFFE6EDF3)
+    val TextSecondary = Color(0xFF8B949E)
+    val TextDisabled = Color(0xFF484F58)
+    val AccentBlue = Color(0xFF58A6FF)
+    val AccentGreen = Color(0xFF3FB950)
+    val AccentAmber = Color(0xFFD29922)
 }
 
 /**
  * Returns a color appropriate for the given nodeType.
  */
 private fun nodeTypeColor(nodeType: String): Color = when (nodeType) {
-    "AsynchronousEventBridge" -> Color(0xFFBC8CFF)  // purple
-    "KafkaConsumer"           -> Color(0xFF58A6FF)  // blue
-    "DMXLightingController"   -> Color(0xFF3FB950)  // green
-    else                      -> Color(0xFFD29922)  // amber
+    "AsynchronousEventBridge" -> Color(0xFFBC8CFF) // purple
+    "KafkaConsumer" -> Color(0xFF58A6FF) // blue
+    "DMXLightingController" -> Color(0xFF3FB950) // green
+    else -> Color(0xFFD29922) // amber
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -363,7 +390,7 @@ private fun PreviewHudPanelStreaming() {
                     physicalAnchorId = "anchor_stage_rig_left_04",
                     semanticConstraints = listOf("Must process incoming DMX tokens below 11ms latency"),
                     loopEngineeringSkillTemplate = "autonomous-service-generator-v1",
-                    isActive = true
+                    isActive = true,
                 ),
                 NodeCardState(
                     nodeId = "auth-service",
@@ -371,8 +398,8 @@ private fun PreviewHudPanelStreaming() {
                     nodeType = "KafkaConsumer",
                     physicalAnchorId = "anchor_auth_01",
                     semanticConstraints = emptyList(),
-                    loopEngineeringSkillTemplate = "auth-agent-v2"
-                )
+                    loopEngineeringSkillTemplate = "auth-agent-v2",
+                ),
             ),
             status = PanelStatus.STREAMING,
         )
