@@ -24,7 +24,7 @@
     <!-- ── XR feature declarations ─────────────────────────────────────────── -->
     <uses-feature
         android:name="android.hardware.xr.headtracking"
-        android:required="true" />
+        android:required="false" />
 
     <application
         android:allowBackup="true"
