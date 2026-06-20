@@ -73,30 +73,32 @@ class MainActivity : ComponentActivity() {
     private var session: Session? = null
 
     private val planePermission = "android.permission.SCENE_UNDERSTANDING_COARSE"
+    private val cameraPermission = "android.permission.CAMERA"
 
     private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            val planeGranted = permissions[planePermission] ?: false
+            val cameraGranted = permissions[cameraPermission] ?: false
+            
+            if (planeGranted) {
                 _logs.value = (_logs.value + "Permission granted: Plane tracking active").takeLast(5)
-                configureSession()
-            } else {
-                _logs.value = (_logs.value + "Permission denied: Plane tracking disabled").takeLast(5)
             }
+            if (cameraGranted) {
+                _logs.value = (_logs.value + "Permission granted: Camera tracking active").takeLast(5)
+            }
+            
+            configureSession(enablePlanes = planeGranted)
         }
 
     /**
      * Configures the XR session with the desired tracking modes.
      */
-    private fun configureSession() {
+    private fun configureSession(enablePlanes: Boolean = true) {
         val s = session ?: return
-        val hasPlanePermission = ContextCompat.checkSelfPermission(
-            this,
-            planePermission,
-        ) == PackageManager.PERMISSION_GRANTED
-
+        
         val newConfig = s.config.copy(
             deviceTracking = DeviceTrackingMode.SPATIAL_LAST_KNOWN,
-            planeTracking = if (hasPlanePermission) {
+            planeTracking = if (enablePlanes) {
                 PlaneTrackingMode.HORIZONTAL_AND_VERTICAL
             } else {
                 PlaneTrackingMode.DISABLED
@@ -105,6 +107,10 @@ class MainActivity : ComponentActivity() {
 
         try {
             s.configure(newConfig)
+        } catch (_: SecurityException) {
+            _logs.value = (_logs.value + "Security Error: Missing permissions").takeLast(5)
+            // Fallback to basic tracking if planes fail
+            if (enablePlanes) configureSession(enablePlanes = false)
         } catch (e: Exception) {
             _logs.value = (_logs.value + "Error configuring session: ${e.message}").takeLast(5)
         }
@@ -202,12 +208,18 @@ class MainActivity : ComponentActivity() {
             session = LocalSession.current
             LaunchedEffect(session) {
                 if (session != null) {
-                    if (ContextCompat.checkSelfPermission(
-                            this@MainActivity,
-                            planePermission,
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        requestPermissionLauncher.launch(planePermission)
+                    val hasPlanePermission = ContextCompat.checkSelfPermission(
+                        this@MainActivity,
+                        planePermission,
+                    ) == PackageManager.PERMISSION_GRANTED
+                    
+                    val hasCameraPermission = ContextCompat.checkSelfPermission(
+                        this@MainActivity,
+                        cameraPermission,
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    if (!hasPlanePermission || !hasCameraPermission) {
+                        requestPermissionLauncher.launch(arrayOf(planePermission, cameraPermission))
                     } else {
                         configureSession()
                     }

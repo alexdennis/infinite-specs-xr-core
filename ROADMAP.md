@@ -20,8 +20,8 @@ This document outlines the transition from the current "Strange Loop" prototype 
 
 ## Phase 3: Intelligent Ingestion (The "Brain")
 **Goal**: Use LLMs to translate fuzzy human intent into strict system schemas.
-- [ ] **LLM Integration**: Connect the `SpatialIntentParser` to a remote or local LLM (Gemini).
-- [ ] **Intent Distillation**: Map natural language + gaze vectors to the `ArchitecturalIntent` schema.
+- [x] **LLM Integration**: Connect the `SpatialIntentParser` to a remote or local LLM (Gemini).
+- [x] **Intent Distillation**: Map natural language + gaze vectors to the `ArchitecturalIntent` schema.
 - [ ] **Review & Refine UI**: Add a "Proposal" state in the HUD where users can tweak the AI's parsed plan before committing to code.
 
 ## Phase 4: Loop Engineering Visuals (The "Strange Loop")

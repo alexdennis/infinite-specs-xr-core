@@ -15,6 +15,10 @@
     <!-- Gaze / eye-tracking input (Jetpack XR) -->
     <uses-permission android:name="android.permission.EYE_TRACKING" />
 
+    <!-- Camera access for AR tracking -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Voice transcript input -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 

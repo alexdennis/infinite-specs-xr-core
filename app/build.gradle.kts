@@ -5,6 +5,9 @@
  * Targets Android XR Developer Preview 4 (minSdk 33, compileSdk 36).
  */
 
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,6 +19,12 @@ android {
     namespace   = "com.infinitespecs.xr"
     compileSdk  = 36
 
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(FileInputStream(localPropertiesFile))
+    }
+
     defaultConfig {
         applicationId = "com.infinitespecs.xr"
         minSdk        = 33
@@ -24,6 +33,9 @@ android {
         versionName   = "0.1.0-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val googleAiApiKey = localProperties.getProperty("GOOGLE_AI_API_KEY") ?: ""
+        buildConfigField("String", "GOOGLE_AI_API_KEY", "\"$googleAiApiKey\"")
     }
 
     buildTypes {
@@ -47,6 +59,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -81,6 +94,9 @@ dependencies {
     implementation(libs.ktor.server.sse)
     implementation(libs.ktor.contentnegotiation)
     implementation(libs.ktor.serialization.json)
+
+    // ── Google AI (Gemini) ───────────────────────────────────────────────────
+    implementation(libs.generativeai)
 
     // ── Test ─────────────────────────────────────────────────────────────────
     testImplementation(libs.junit)
