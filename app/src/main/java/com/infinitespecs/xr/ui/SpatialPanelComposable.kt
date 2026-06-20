@@ -112,6 +112,7 @@ fun InfiniteSpecsHudPanel(
     modifier: Modifier = Modifier,
     nodes: List<NodeCardState>,
     status: PanelStatus = PanelStatus.IDLE,
+    logs: List<String> = emptyList(),
     onTrigger: () -> Unit = {},
 ) {
     Box(modifier = modifier) {
@@ -126,6 +127,10 @@ fun InfiniteSpecsHudPanel(
                 HudPanelHeader(status = status)
                 Spacer(modifier = Modifier.height(12.dp))
                 NodeCardRow(nodes = nodes)
+                if (logs.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HudLogArea(logs = logs)
+                }
                 Spacer(modifier = Modifier.height(12.dp))
                 HudStatusBar(status = status)
             }
@@ -314,6 +319,32 @@ fun NodeCard(
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Area displaying real-time logs from external autonomous agents.
+ */
+@Composable
+private fun HudLogArea(logs: List<String>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Black.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+            .padding(8.dp),
+    ) {
+        logs.forEach { log ->
+            Text(
+                text = "> $log",
+                fontFamily = FontFamily.Monospace,
+                fontSize = 9.sp,
+                color = HudColors.AccentGreen.copy(alpha = 0.8f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
  * Bottom status bar displaying the current pipeline state to the developer.
  */
 @Composable
@@ -402,6 +433,11 @@ private fun PreviewHudPanelStreaming() {
                 ),
             ),
             status = PanelStatus.STREAMING,
+            logs = listOf(
+                "Analyzing spatial context...",
+                "Mapping intent to MCP schema...",
+                "Broadcasting spec to workstation...",
+            ),
         )
     }
 }

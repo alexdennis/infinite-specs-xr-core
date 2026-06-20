@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
 
     private val _panelStatus = MutableStateFlow(PanelStatus.IDLE)
     private val _nodes = MutableStateFlow<List<NodeCardState>>(emptyList())
+    private val _logs = MutableStateFlow<List<String>>(emptyList())
 
     /**
      * Triggers the mock perception pipeline.
@@ -75,9 +76,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        bridge.stop()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Start the MCP daemon server
+        bridge.start()
 
         // Wire up the bridge output stream to update the UI State
         bridge.outboundSpecificationStream
@@ -105,6 +114,13 @@ class MainActivity : ComponentActivity() {
             }
             .launchIn(lifecycleScope)
 
+        // Listen for inbound logs from external agents
+        bridge.inboundLogStream
+            .onEach { log ->
+                _logs.value = (_logs.value + log).takeLast(5)
+            }
+            .launchIn(lifecycleScope)
+
         setContent {
             MaterialTheme {
                 Subspace {
@@ -116,9 +132,11 @@ class MainActivity : ComponentActivity() {
                     ) {
                         val nodes by _nodes.collectAsState()
                         val status by _panelStatus.collectAsState()
+                        val logs by _logs.collectAsState()
                         InfiniteSpecsHudPanel(
                             nodes = nodes,
                             status = status,
+                            logs = logs,
                             onTrigger = { triggerPerceptionPipeline() },
                         )
                     }
