@@ -13,9 +13,9 @@ This document outlines the transition from the current "Strange Loop" prototype 
 
 ## Phase 2: The MCP Daemon (The Connectivity)
 **Goal**: Establish a bidirectional network bridge between the XR headset and the developer's workstation.
-- [ ] **Ktor SSE Server**: Implement a real Model Context Protocol (MCP) server inside the app using Ktor.
+- [x] **Ktor SSE Server**: Implement a real Model Context Protocol (MCP) server inside the app using Ktor.
 - [ ] **Network Discovery**: Implement mDNS/NSD so the IDE can "find" the headset on the local network.
-- [ ] **Bidirectional Sync**: Enable external agents (Claude Code, Cursor) to stream build logs and errors back to the XR HUD.
+- [x] **Bidirectional Sync**: Enable external agents (Claude Code, Cursor) to stream build logs and errors back to the XR HUD.
 - [ ] **Schema Export**: Automatically drop `.mcp.json` specs into the connected workspace.
 
 ## Phase 3: Intelligent Ingestion (The "Brain")
