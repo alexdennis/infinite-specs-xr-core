@@ -11,15 +11,18 @@
 
 package com.infinitespecs.xr
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.xr.arcore.ArDevice
 import androidx.xr.arcore.hitTest
@@ -68,6 +71,44 @@ class MainActivity : ComponentActivity() {
     private val _logs = MutableStateFlow<List<String>>(emptyList())
 
     private var session: Session? = null
+
+    private val planePermission = "android.permission.SCENE_UNDERSTANDING_COARSE"
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                _logs.value = (_logs.value + "Permission granted: Plane tracking active").takeLast(5)
+                configureSession()
+            } else {
+                _logs.value = (_logs.value + "Permission denied: Plane tracking disabled").takeLast(5)
+            }
+        }
+
+    /**
+     * Configures the XR session with the desired tracking modes.
+     */
+    private fun configureSession() {
+        val s = session ?: return
+        val hasPlanePermission = ContextCompat.checkSelfPermission(
+            this,
+            planePermission,
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val newConfig = s.config.copy(
+            deviceTracking = DeviceTrackingMode.SPATIAL_LAST_KNOWN,
+            planeTracking = if (hasPlanePermission) {
+                PlaneTrackingMode.HORIZONTAL_AND_VERTICAL
+            } else {
+                PlaneTrackingMode.DISABLED
+            },
+        )
+
+        try {
+            s.configure(newConfig)
+        } catch (e: Exception) {
+            _logs.value = (_logs.value + "Error configuring session: ${e.message}").takeLast(5)
+        }
+    }
 
     /**
      * Triggers the mock perception pipeline.
@@ -160,12 +201,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             session = LocalSession.current
             LaunchedEffect(session) {
-                session?.let { s ->
-                    val newConfig = s.config.copy(
-                        deviceTracking = DeviceTrackingMode.SPATIAL_LAST_KNOWN,
-                        planeTracking = PlaneTrackingMode.HORIZONTAL_AND_VERTICAL,
-                    )
-                    s.configure(newConfig)
+                if (session != null) {
+                    if (ContextCompat.checkSelfPermission(
+                            this@MainActivity,
+                            planePermission,
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        requestPermissionLauncher.launch(planePermission)
+                    } else {
+                        configureSession()
+                    }
                 }
             }
 
